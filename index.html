@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WuWa Topup Hub - Kho acc của Chía</title>
     
+    <link rel="icon" type="image/jpeg" href="icon.jpg">
+    <link rel="shortcut icon" type="image/jpeg" href="icon.jpg">
+    <link rel="apple-touch-icon" href="icon.jpg">
+    <meta name="theme-color" content="#00f0ff">
+
     <!-- Tailwind CSS & Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -131,7 +136,7 @@
 
     <!-- Modal Thêm / Sửa Gói Nạp -->
     <div id="wuwaModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="relative w-full max-w-lg bg-[#080b12] border-2 border-cyan-400 rounded-2xl shadow-[0_0_50px_rgba(0,240,255,0.35)] overflow-hidden flex flex-col">
+        <div class="relative w-full max-w-lg bg-[#080b12] border-2 border-cyan-400 rounded-2xl shadow-[0_0_50px_rgba(0,240,255,0.35)] overflow-hidden flex flex-col my-auto max-h-[96vh]">
             <div class="flex items-center justify-between px-5 py-3.5 border-b border-cyan-950 bg-zinc-950 flex-shrink-0">
                 <div class="flex items-center space-x-2.5 truncate">
                     <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_#00f0ff] animate-pulse"></span>
@@ -327,16 +332,34 @@
             document.getElementById('wuwaForm').reset();
             uploadedBase64Image = "";
             document.getElementById('imgPreviewContainer').classList.add('hidden');
+            
+            // Mở khóa và reset nội dung nút submit
             const submitBtn = document.getElementById('submitBtn');
-            if (submitBtn) submitBtn.disabled = false;
-            document.getElementById('submitBtnText').textContent = "LƯU GÓI NẠP LÊN SUPABASE";
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+                    <span id="submitBtnText">LƯU GÓI NẠP LÊN SUPABASE</span>
+                `;
+            }
+            
             document.getElementById('modalHeading').innerHTML = `THÊM GÓI NẠP // <span class="text-zinc-100">BẢNG GIÁ</span>`;
             document.getElementById('wuwaModal').classList.replace('hidden', 'flex');
+            document.body.style.overflow = 'hidden';
         };
 
         window.closeWuwaModal = function() {
             editingPkgId = null;
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+                    <span id="submitBtnText">LƯU GÓI NẠP LÊN SUPABASE</span>
+                `;
+            }
             document.getElementById('wuwaModal').classList.replace('flex', 'hidden');
+            document.body.style.overflow = '';
         };
 
         window.openEditModal = function(id) {
@@ -356,9 +379,18 @@
                 container.classList.add('hidden');
             }
 
-            document.getElementById('submitBtnText').textContent = "CẬP NHẬT GÓI NẠP";
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+                    <span id="submitBtnText">CẬP NHẬT GÓI NẠP</span>
+                `;
+            }
+
             document.getElementById('modalHeading').innerHTML = `CHỈNH SỬA // <span class="text-cyan-300">${escapeHtml(pkg.title)}</span>`;
             document.getElementById('wuwaModal').classList.replace('hidden', 'flex');
+            document.body.style.overflow = 'hidden';
         };
 
         window.handleImageUpload = function(e) {
@@ -393,8 +425,15 @@
             const title = document.getElementById('pkgTitle').value.trim();
             const price = parseFloat(document.getElementById('pkgPrice').value) || 0;
 
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> ĐANG LƯU...`;
+            if (!title) {
+                showToast("Vui lòng nhập tên gói nạp!", true);
+                return;
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> ĐANG LƯU...`;
+            }
 
             try {
                 const payload = {
@@ -414,10 +453,16 @@
                 closeWuwaModal();
                 await fetchPackages();
             } catch (err) {
+                console.error("Lỗi lưu gói:", err);
                 showToast("Lỗi khi lưu vào Supabase!", true);
             } finally {
-                submitBtn.disabled = false;
-                document.getElementById('submitBtnText').textContent = editingPkgId ? "CẬP NHẬT GÓI NẠP" : "LƯU GÓI NẠP LÊN SUPABASE";
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `
+                        <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+                        <span id="submitBtnText">LƯU GÓI NẠP LÊN SUPABASE</span>
+                    `;
+                }
             }
         };
 
