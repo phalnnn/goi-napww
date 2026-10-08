@@ -10,6 +10,13 @@
     <link rel="apple-touch-icon" href="icon.jpg">
     <meta name="theme-color" content="#00f0ff">
 
+    <!-- PWA Config -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WuWa Hub">
+
     <!-- Tailwind CSS & Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -333,7 +340,6 @@
             uploadedBase64Image = "";
             document.getElementById('imgPreviewContainer').classList.add('hidden');
             
-            // Mở khóa và reset nội dung nút submit
             const submitBtn = document.getElementById('submitBtn');
             if (submitBtn) {
                 submitBtn.disabled = false;
@@ -549,6 +555,13 @@
             _supabase.channel('public:wuwa')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'wuwa_packages' }, () => fetchPackages())
                 .subscribe();
+
+            // Đăng ký Service Worker cho PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA Service Worker hoạt động:', reg.scope))
+                    .catch(err => console.error('PWA SW lỗi:', err));
+            }
         });
     </script>
 </body>
